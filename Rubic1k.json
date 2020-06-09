@@ -1,0 +1,1231 @@
+
+
+
+
+
+
+
+
+
+
+local Rubick = {}
+
+Rubick.ComboKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "0a. Combo Key", Enum.ButtonCode.KEY_SPACE)
+Rubick.ForceStealKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "0b. Force Steal", Enum.ButtonCode.KEY_T)
+
+Rubick.NukesKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "1. NukesKey", Enum.ButtonCode.KEY_1)
+Rubick.DisablesKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "2. DisablesKey", Enum.ButtonCode.KEY_2)
+Rubick.SilencesKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "3. SilencesKey", Enum.ButtonCode.KEY_3)
+Rubick.SlowsKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "4. SlowsKey", Enum.ButtonCode.KEY_4)
+Rubick.SummonsKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "5. SummonsKey", Enum.ButtonCode.KEY_5)
+Rubick.BuffsKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "6. BuffsKey", Enum.ButtonCode.KEY_6)
+Rubick.DebuffsKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "7. DebuffsKey", Enum.ButtonCode.KEY_7)
+Rubick.HealsKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "8. HealsKey", Enum.ButtonCode.KEY_8)
+Rubick.EscapesKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "9. EscapesKey", Enum.ButtonCode.KEY_9)
+Rubick.EnchantsKey = Menu.AddKeyOption({"Hero Specific", "Rubick"}, "9b. EnchantsKey", Enum.ButtonCode.KEY_0)
+
+Rubick.option = Menu.AddOption({ "Hero Specific", "Rubick", "Advanced"}, "Enable", "")
+Rubick.needsInit = true
+Rubick.spellIconPath = "resource/flash3/images/spellicons/"
+Rubick.cachedIcons = {}
+Rubick.pickedSkills ={}
+Rubick.skillOrder ={}
+Rubick.pickedSkills ={}
+Rubick.skillCoolDown ={}
+Rubick.heroLastSkill = {}
+Rubick.TimeTick = 0
+Rubick.Delay = 0
+Rubick.ForceSteal = false
+Rubick.Font = Renderer.LoadFont("Arial", 16, Enum.FontWeight.EXTRABOLD)
+
+Rubick.NukesEnabled = true
+Rubick.DisablesEnabled = true
+Rubick.SilencesEnabled = true
+Rubick.SlowsEnabled = false
+Rubick.SummonsEnabled = false
+Rubick.BuffsEnabled = false
+Rubick.DebuffsEnabled = false
+Rubick.HealsEnabled = false
+Rubick.EscapesEnabled = false
+Rubick.EnchantsEnabled = false
+
+function Rubick.OnGameStart()
+    Rubick.needsInit = true
+    Rubick.spellIconPath = "resource/flash3/images/spellicons/"
+    Rubick.cachedIcons = {}
+    Rubick.pickedSkills ={}
+    Rubick.skillOrder ={}
+    Rubick.pickedSkills ={}
+    Rubick.skillCoolDown ={}
+    Rubick.heroLastSkill = {}
+    Rubick.TimeTick = 0
+    Rubick.Delay = 0
+    Rubick.ForceSteal = false
+
+    Rubick.NukesEnabled = true
+    Rubick.DisablesEnabled = true
+    Rubick.SilencesEnabled = true
+    Rubick.SlowsEnabled = false
+    Rubick.SummonsEnabled = false
+    Rubick.BuffsEnabled = false
+    Rubick.DebuffsEnabled = false
+    Rubick.HealsEnabled = false
+    Rubick.EscapesEnabled = false
+    Rubick.EnchantsEnabled = false
+end
+
+function Rubick.IsCurrentSkillGood()
+    local myHero = Heroes.GetLocal()
+    local currentSkill = NPC.GetAbilityByIndex(myHero,3)
+    local currentSkillName = Ability.GetName(currentSkill)
+
+
+    local tables = {
+        Rubick.Nukes,
+        Rubick.Disables,
+        Rubick.Silences,
+        Rubick.Slows,
+        Rubick.Summons,
+        Rubick.Buffs,
+        Rubick.Debuffs,
+        Rubick.Heals,
+        Rubick.Escapes,
+        Rubick.Enchants
+    }
+    local currentTable
+    for k, v in ipairs(tables) do
+        currentTable = v
+        if v == Rubick.Nukes and Rubick.NukesEnabled then 
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Disables and Rubick.DisablesEnabled then 
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Silences and Rubick.SilencesEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Slows and Rubick.SlowsEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Summons and Rubick.SummonsEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Buffs and Rubick.BuffsEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Debuffs and Rubick.DebuffsEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Heals and Rubick.HealsEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Escapes and Rubick.EscapesEnabled then
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+        if v == Rubick.Enchants and Rubick.EnchantsEnabled then 
+            for k, v in ipairs(currentTable) do
+                if currentSkillName == v then
+                    return true
+                end
+            end
+        end
+
+    end
+
+    return false
+end
+
+function Rubick.OnUpdate()
+    if not Menu.IsEnabled(Rubick.option) then return end
+    local myHero = Heroes.GetLocal()
+    if not myHero then return end 
+    local myName = NPC.GetUnitName(myHero)
+
+    if myName ~="npc_dota_hero_rubick" then return end
+    local myMana = NPC.GetMana(myHero)
+    
+    local enemy = Rubick.GetNearestHeroToCursor()
+
+    if Menu.IsKeyDownOnce(Rubick.ForceStealKey) then
+        if Rubick.ForceSteal then
+            Rubick.ForceSteal = false
+        else 
+            Rubick.ForceSteal = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.NukesKey) then
+        if Rubick.NukesEnabled then
+            Rubick.NukesEnabled = false
+        else 
+            Rubick.NukesEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.DisablesKey) then
+        if Rubick.DisablesEnabled then
+            Rubick.DisablesEnabled = false
+        else 
+            Rubick.DisablesEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.SilencesKey) then
+        if Rubick.SilencesEnabled then
+            Rubick.SilencesEnabled = false
+        else 
+            Rubick.SilencesEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.SlowsKey) then
+        if Rubick.SlowsEnabled then
+            Rubick.SlowsEnabled = false
+        else 
+            Rubick.SlowsEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.SummonsKey) then
+        if Rubick.SummonsEnabled then
+            Rubick.SummonsEnabled = false
+        else 
+            Rubick.SummonsEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.BuffsKey) then
+        if Rubick.BuffsEnabled then
+            Rubick.BuffsEnabled = false
+        else 
+            Rubick.BuffsEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.DebuffsKey) then
+        if Rubick.DebuffsEnabled then
+            Rubick.DebuffsEnabled = false
+        else 
+            Rubick.DebuffsEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.HealsKey) then
+        if Rubick.HealsEnabled then
+            Rubick.HealsEnabled = false
+        else 
+            Rubick.HealsEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.EscapesKey) then
+        if Rubick.EscapesEnabled then
+            Rubick.EscapesEnabled = false
+        else 
+            Rubick.EscapesEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDownOnce(Rubick.EnchantsKey) then
+        if Rubick.EnchantsEnabled then
+            Rubick.EnchantsEnabled = false
+        else 
+            Rubick.EnchantsEnabled = true
+        end
+    end
+
+    if Menu.IsKeyDown(Rubick.ComboKey) and enemy ~= nil and Entity.IsAlive(myHero) and not Entity.IsDormant(myHero) and Entity.GetHealth(myHero) > 0 and GameRules.GetGameTime() > Rubick.Delay then 
+        local telekinesis = NPC.GetAbility(myHero, "rubick_telekinesis")
+        local telekinesis_land = NPC.GetAbility(myHero, "rubick_telekinesis_land")
+        local fadebolt = NPC.GetAbility(myHero, "rubick_fade_bolt")
+        local currentSkill = NPC.GetAbilityByIndex(myHero,3)
+        if telekinesis and Ability.IsCastable(telekinesis, myMana) and Ability.IsReady(telekinesis) and not Ability.IsInAbilityPhase(telekinesis) then
+            Ability.CastTarget(telekinesis, enemy)
+        end
+        if fadebolt and Ability.IsCastable(fadebolt, myMana) and Ability.IsReady(fadebolt) and not Ability.IsInAbilityPhase(fadebolt) then
+            Ability.CastTarget(fadebolt, enemy)
+        end
+
+        if currentSkill then
+            if Ability.GetCastRange(currentSkill) == 0 then
+                if Ability.IsCastable(currentSkill, myMana) and Ability.IsReady(currentSkill) and not Ability.IsInAbilityPhase(currentSkill) then
+                    Ability.CastNoTarget(currentSkill)
+                end
+            elseif Ability.GetCastRange(currentSkill) > 0 then
+                if Ability.IsCastable(currentSkill, myMana) and Ability.IsReady(currentSkill) and not Ability.IsInAbilityPhase(currentSkill) and NPC.IsPositionInRange(myHero, NPC.GetAbsOrigin(enemy), Ability.GetCastRange(currentSkill)) then
+                    Ability.CastTarget(currentSkill, enemy)
+                end
+                if Ability.IsCastable(currentSkill, myMana) and Ability.IsReady(currentSkill) and not Ability.IsInAbilityPhase(currentSkill) and NPC.IsPositionInRange(myHero, NPC.GetAbsOrigin(enemy), Ability.GetCastRange(currentSkill)) then
+                    Ability.CastPosition(currentSkill, Entity.GetAbsOrigin(enemy))
+                end
+                if Ability.IsCastable(currentSkill, myMana) and Ability.IsReady(currentSkill) and not Ability.IsInAbilityPhase(currentSkill) and NPC.IsPositionInRange(myHero, NPC.GetAbsOrigin(enemy), Ability.GetCastRange(currentSkill)) then
+                    Ability.CastTarget(currentSkill, myHero)
+                end
+            end
+        end
+        Rubick.Delay = GameRules.GetGameTime() + 0.05
+    end
+
+    if Rubick.TimeTick > GameRules.GetGameTime() then return end 
+
+    local ultimate = NPC.GetAbility(myHero, "rubick_spell_steal")
+
+    if not ultimate or Ability.GetCooldownTimeLeft(ultimate)>0 or not Ability.IsCastable(ultimate, myMana) then return end
+    local currentSkill = NPC.GetAbilityByIndex(myHero,3)
+
+    if currentSkill and Ability.GetName(currentSkill)~="rubick_empty1" then
+        Rubick.skillCoolDown[Ability.GetName(currentSkill)] = GameRules.GetGameTime() + Ability.GetCooldownTimeLeft(currentSkill)
+    end 
+
+    Rubick.heroLastSkill = {}
+    if GameRules.GetGameTime() > Rubick.Delay then
+        Rubick.Delay = GameRules.GetGameTime()
+        local target
+        local skillTarget
+        for i = 1, Heroes.Count() do
+            local hero = Heroes.Get(i)
+            if not Entity.IsSameTeam(myHero, hero) and not NPC.IsIllusion(hero) then
+                local candidateTime = 99999
+                local candidateSkill
+                local secondsSinceLastUse = 99999
+                for j = 0, 24 do
+                    local ability = NPC.GetAbilityByIndex(hero, j)
+                    local abilityName
+
+                    if ability then 
+                        abilityName = Ability.GetName(ability)
+                    end 
+
+                    if abilityName then
+                        if Ability.SecondsSinceLastUse(ability) > 0 and Ability.SecondsSinceLastUse(ability) < secondsSinceLastUse then
+                            secondsSinceLastUse = Ability.SecondsSinceLastUse(ability)
+
+                            -- remove the hero, ability pair from the table if it already exists
+                            for k, v in ipairs(Rubick.heroLastSkill) do
+                                if Rubick.heroLastSkill[k] == hero then
+                                    table.remove(Rubick.heroLastSkill, k)
+                                end
+                            end
+
+                            -- insert the hero, ability pair
+                            table.insert(Rubick.heroLastSkill, {hero, ability})
+                        end 
+                    end
+                end
+            end
+        end
+        local tables = {
+            Rubick.Nukes,
+            Rubick.Disables,
+            Rubick.Silences,
+            Rubick.Slows,
+            Rubick.Summons,
+            Rubick.Buffs,
+            Rubick.Debuffs,
+            Rubick.Heals,
+            Rubick.Escapes,
+            Rubick.Enchants
+        }
+        local currentTable
+        for k, v in ipairs(tables) do
+            currentTable = v
+            if v == Rubick.Nukes and Rubick.NukesEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Disables and Rubick.DisablesEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Silences and Rubick.SilencesEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Slows and Rubick.SlowsEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Summons and Rubick.SummonsEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Buffs and Rubick.BuffsEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Debuffs and Rubick.DebuffsEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Heals and Rubick.HealsEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Escapes and Rubick.EscapesEnabled then
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if v == Rubick.Enchants and Rubick.EnchantsEnabled then 
+                if currentSkill then
+                    if Ability.GetCooldownTimeLeft(currentSkill) > 0 or Ability.GetName(currentSkill)=="rubick_empty1" or Rubick.IsCurrentSkillGood() == false or Rubick.ForceSteal == true then
+                        for k, v in ipairs(currentTable) do
+                            for i, j in ipairs(Rubick.heroLastSkill) do
+                                if v == Ability.GetName(j[2]) then
+                                    if Ability.SecondsSinceLastUse(j[2]) > 0 then -- prevent loop of stealing the same spell due to spell cast in fog
+                                        if not Entity.IsDormant(j[1]) and NPC.IsEntityInRange(j[1], myHero, Ability.GetCastRange(ultimate)) then
+                                            if Ability.GetName(j[2]) ~= Ability.GetName(currentSkill) then
+                                                if not Ability.IsPassive(j[2]) then
+                                                    if not Rubick.skillCoolDown[Ability.GetName(j[2])] or Rubick.skillCoolDown[Ability.GetName(j[2])] < GameRules.GetGameTime() then
+                                                        if not NPC.IsChannellingAbility(myHero) then
+                                                            Ability.CastTarget(ultimate, enemy)
+                                                            Rubick.TimeTick = GameRules.GetGameTime() + 2
+                                                            return
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end 
+
+function Rubick.OnDraw()
+    if not Menu.IsEnabled(Rubick.option) then return end
+    local myHero = Heroes.GetLocal()
+    if not myHero then return end 
+    local myName = NPC.GetUnitName(myHero)
+
+    if myName ~="npc_dota_hero_rubick" then return end
+    local myMana = NPC.GetMana(myHero)
+    local x = Renderer.GetScreenSize() / 2
+    local y = 75
+    
+    if Rubick.ForceSteal == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "T. Force", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "T. Force", 1)
+    end
+    y = y + 15  
+    if Rubick.NukesEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "1. Nukes", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "1. Nukes", 1)
+    end
+    y = y + 15  
+    if Rubick.DisablesEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "2. Disables", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "2. Disables", 1)
+    end
+    y = y + 15  
+    if Rubick.SilencesEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "3. Silences", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "3. Silences", 1)
+    end
+    y = y + 15  
+    if Rubick.SlowsEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "4. Slows", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "4. Slows", 1)
+    end
+    y = y + 15 
+    if Rubick.SummonsEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "5. Summons", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "5. Summons", 1)
+    end
+    y = y + 15  
+    if Rubick.BuffsEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "6. Buffs", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "6. Buffs", 1)
+    end
+    y = y + 15 
+    if Rubick.DebuffsEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "7. Debuffs", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "7. Debuffs", 1)
+    end
+    y = y + 15  
+    if Rubick.HealsEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "8. Heals", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "8. Heals", 1)
+    end
+    y = y + 15  
+    if Rubick.EscapesEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "9. Escapes", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "9. Escapes", 1)
+    end
+    y = y + 15  
+    if Rubick.EnchantsEnabled == true then
+        Renderer.SetDrawColor(0, 255, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "0. Enchants", 1)
+    else
+        Renderer.SetDrawColor(255, 0, 0, 220)
+        Renderer.DrawTextCentered(Rubick.Font, x, y, "0. Enchants", 1)
+    end
+end
+
+function Rubick.GetNearestHeroToCursor()
+    local myHero = Heroes.GetLocal()
+    local cursorPos = Input.GetWorldCursorPos()
+    local distTable = {}
+    local firstDist = 99999
+    local secondDist = 99999
+    local closestNPC = nil
+    for i = 1, NPCs.Count() do
+        local npc = NPCs.Get(i)
+        if npc and Entity.GetHealth(npc) > 0 and not Entity.IsSameTeam(myHero, npc) and not NPC.IsIllusion(npc) and NPC.IsPositionInRange(npc, cursorPos, 2500) and (NPC.IsHero(npc) or NPC.HasModifier(npc, "modifier_morphling_replicate_timer")) then --  
+        local npcPos = Entity.GetAbsOrigin(npc)
+        secondDist = (cursorPos - npcPos):Length2D()
+        if secondDist and firstDist and secondDist < firstDist and npc then
+            firstDist = secondDist
+            closestNPC = npc
+        end
+        end
+    end
+    if closestNPC ~= nil then
+        return closestNPC
+
+    else
+        return nil
+    end
+end
+
+Rubick.Nukes = {
+    "undying_tombstone",
+    "omniknight_guardian_angel",
+    "enigma_black_hole",
+    "magnataur_reverse_polarity",
+    "tidehunter_ravage",
+    "treant_overgrowth",
+    "silencer_global_silence",
+    "beastmaster_primal_roar",
+    "zuus_cloud",
+    "faceless_void_chronosphere",
+    "bloodseeker_rupture",
+    "pudge_dismember",
+    "necrolyte_reapers_scythe",
+    "sven_gods_strength",
+    "dark_seer_wall_of_replica",
+    "death_prophet_exorcism",
+    "storm_spirit_ball_lightning",
+    "sandking_burrowstrike",
+    "earth_spirit_magnetize",
+    "venomancer_poison_nova",
+    "naga_siren_song_of_the_siren",
+    "medusa_stone_gaze",
+    "phoenix_supernova",
+    "oracle_false_promise",
+    "winter_wyvern_winters_curse",
+    "monkey_king_wukongs_command",
+    "pangolier_gyroshell",
+    "dark_willow_terrorize",
+    "terrorblade_sunder",
+    "chen_hand_of_god",
+    "legion_commander_duel",
+    "abaddon_borrowed_time",
+    "shadow_shaman_mass_serpent_ward",
+    "nevermore_requiem",
+    "windrunner_focusfire",
+    "witch_doctor_death_ward",
+    "witch_doctor_maledict",
+    "abaddon_death_coil",
+    "abyssal_underlord_firestorm",
+    "ancient_apparition_ice_blast",
+    "ancient_apparition_ice_blast_release",
+    "antimage_mana_void",
+    "axe_culling_blade",
+    "bane_fiends_grip",
+    "beastmaster_wild_axes",
+    "bloodseeker_blood_bath",
+    "bounty_hunter_shuriken_toss",
+    "brewmaster_thunder_clap",
+    "bristleback_quill_spray",
+    "broodmother_spawn_spiderlings",
+    "centaur_double_edge",
+    "crystal_maiden_crystal_nova",
+    "crystal_maiden_freezing_field",
+    "dazzle_poison_touch",
+    "death_prophet_carrion_swarm",
+    "disruptor_thunder_strike",
+    "dragon_knight_breathe_fire",
+    "earthshaker_echo_slam",
+    "elder_titan_ancestral_spirit",
+    "elder_titan_earth_splitter",
+    "gyrocopter_call_down",
+    "gyrocopter_rocket_barrage",
+    "jakiro_macropyre",
+    "juggernaut_omni_slash",
+    "kunkka_ghostship",
+    "kunkka_torrent",
+    "legion_commander_overwhelming_odds",
+    "leshrac_lightning_storm",
+    "lich_chain_frost",
+    "lich_frost_nova",
+    "lina_laguna_blade",
+    "lina_dragon_slave",
+    "lion_finger_of_death",
+    "luna_lucent_beam",
+    "luna_eclipse",
+    "magnataur_shockwave",
+    "mirana_starfall",
+    "monkey_king_boundless_strike",
+    "morphling_adaptive_strike_agi",
+    "naga_siren_rip_tide",
+    "necrolyte_death_pulse",
+    "nevermore_shadowraze1",
+    "nevermore_shadowraze2",
+    "nevermore_shadowraze3",
+    "night_stalker_void",
+    "nyx_assassin_mana_burn",
+    "obsidian_destroyer_sanity_eclipse",
+    "ogre_magi_fireblast",
+    "ogre_magi_unrefined_fireblast",
+    "oracle_purifying_flames",
+    "phantom_assassin_stifling_dagger",
+    "phantom_lancer_spirit_lance",
+    "pugna_nether_blast",
+    "pugna_life_drain",
+    "queenofpain_sonic_wave",
+    "queenofpain_shadow_strike",
+    "queenofpain_scream_of_pain",
+    "rattletrap_rocket_flare",
+    "razor_plasma_field",
+    "razor_eye_of_the_storm",
+    "rubick_fade_bolt",
+    "sandking_epicenter",
+    "shadow_shaman_ether_shock",
+    "shredder_chakram",
+    "shredder_chakram_2",
+    "silencer_last_word",
+    "skywrath_mage_arcane_bolt",
+    "skywrath_mage_mystic_flare",
+    "skywrath_mage_concussive_shot",
+    "slark_dark_pact",
+    "sniper_assassinate",
+    "spectre_spectral_dagger",
+    "spirit_breaker_nether_strike",
+    "tidehunter_anchor_smash",
+    "tidehunter_gush",
+    "tinker_heat_seeking_missile",
+    "tiny_toss",
+    "tusk_ice_shards",
+    "undying_decay",
+    "ursa_earthshock",
+    "vengefulspirit_wave_of_terror",
+    "viper_viper_strike",
+    "warlock_shadow_word",
+    "windrunner_powershot",
+    "winter_wyvern_splinter_blast",
+    "zuus_arc_lightning",
+    "zuus_lightning_bolt",
+    "zuus_thundergods_wrath",
+    "pangolier_swashbuckle",
+    "bane_brain_sap",
+    "axe_battle_hunger",
+    "puck_illusory_orb",
+    "morphling_waveform",
+    "pudge_meat_hook",
+    "death_prophet_spirit_siphon",
+    "shadow_shaman_voodoo",
+    "chen_test_of_faith",
+    "chen_test_of_faith_teleport",
+    "death_prophet_witchcraft",
+    "bloodseeker_bloodrage",
+    "invoker_chaos_meteor",
+    "invoker_deafening_blast",
+    "invoker_tornado",
+    "invoker_sun_strike",
+    "warlock_fatal_bonds",
+    "riki_tricks_of_the_trade",
+    "vengefulspirit_magic_missile",
+    "crystal_maiden_frostbite",
+    "tinker_laser",
+    "sniper_shrapnel",
+    "warlock_rain_of_chaos",
+    "enigma_malefice",
+    "enigma_midnight_pulse",
+    "venomancer_venomous_gale",
+    "templar_assassin_psionic_trap",
+    "leshrac_split_earth",
+    "leshrac_diabolic_edict",
+    "dragon_knight_dragon_tail",
+    "furion_wrath_of_nature",
+    "rattletrap_battery_assault",
+    "leshrac_pulse_nova",
+    "dark_seer_vacuum",
+    "dark_seer_ion_shell",
+    "omniknight_purification",
+    "huskar_life_break",
+    "weaver_the_swarm",
+    "weaver_shukuchi",
+    "jakiro_dual_breath",
+    "batrider_flamebreak",
+    "batrider_firefly",
+    "tusk_snowball",
+    "tusk_launch_snowball",
+    "tusk_ice_shards_stop",
+    "doom_bringer_doom",
+    "doom_bringer_infernal_blade",
+    "doom_bringer_scorched_earth",
+    "gyrocopter_homing_missile",
+    "gyrocopter_flak_cannon",
+    "alchemist_acid_spray",
+    "silencer_curse_of_the_silent",
+    "obsidian_destroyer_mind_over_matter",
+    "phoenix_sun_ray",
+    "phoenix_sun_ray_stop",
+    "phoenix_sun_ray_toggle_move",
+    "terrorblade_reflection",
+    "spectre_haunt",
+    "spectre_reality",
+    "shadow_demon_disruption",
+    "shadow_demon_shadow_poison",
+    "shadow_demon_shadow_poison_release",
+    "chaos_knight_chaos_bolt",
+    "ogre_magi_ignite",
+    "shredder_return_chakram",
+    "shredder_return_chakram_2",
+    "shredder_whirling_death",
+    "magnataur_skewer",
+    "treant_leech_seed",
+    "centaur_hoof_stomp",
+    "visage_soul_assumption",
+    "wisp_spirits",
+    "wisp_spirits_in",
+    "wisp_spirits_out",
+    "medusa_mystic_snake",
+    "disruptor_static_storm",
+    "nyx_assassin_impale",
+    "keeper_of_the_light_illuminate",
+    "keeper_of_the_light_mana_leak",
+    "keeper_of_the_light_blinding_light",
+    "troll_warlord_whirling_axes_ranged",
+    "troll_warlord_whirling_axes_melee",
+    "ember_spirit_sleight_of_fist",
+    "ember_spirit_searing_chains",
+    "ember_spirit_fire_remnant",
+    "ember_spirit_activate_fire_remnant",
+    "phoenix_fire_spirits",
+    "phoenix_launch_fire_spirit",
+    "pangolier_shield_crash",
+    "dark_willow_cursed_crown",
+    "dark_willow_bramble_maze",
+    "dark_willow_bedlam",
+    "winter_wyvern_arctic_burn",
+    "techies_suicide",
+    "arc_warden_flux",
+    "arc_warden_spark_wraith",
+    "storm_spirit_static_remnant"
+}
+
+Rubick.Silences = {
+    "skywrath_mage_ancient_seal",
+    "drow_ranger_wave_of_silence",
+    "bloodseeker_bloodrage",
+    "puck_waning_rift",
+    "death_prophet_silence",
+    "night_stalker_crippling_fear",
+    "disruptor_static_storm"
+}
+
+Rubick.Slows = {
+    "invoker_ice_wall",
+    "warlock_upheaval",
+    "faceless_void_time_dilation",
+    "life_stealer_open_wounds",
+    "ancient_apparition_cold_feet",
+    "ancient_apparition_ice_vortex",
+    "shadow_demon_demonic_purge",
+    "bristleback_viscous_nasal_goo",
+    "visage_grave_chill"
+}
+
+Rubick.Enchants = {
+    "enchantress_enchant",
+    "chen_holy_persuasion", 
+    "enigma_demonic_conversion",
+    "furion_force_of_nature",
+    "clinkz_death_pact",
+    "broodmother_spawn_spiderite",
+    "doom_bringer_devour",
+    "treant_eyes_in_the_forest"
+}
+
+Rubick.Summons = {
+    "invoker_forge_spirit",
+    "arc_warden_tempest_double",
+    "techies_land_mines",
+    "beastmaster_call_of_the_wild",
+    "venomancer_plague_ward",
+    "pugna_nether_ward",
+    "lycan_summon_wolves",
+    "lone_druid_spirit_bear",
+    "chaos_knight_phantasm",
+    "terrorblade_conjure_image",
+    "tusk_frozen_sigil",
+    "techies_remote_mines",
+    "naga_siren_mirror_image",
+    "visage_summon_familiars",
+    "arc_warden_magnetic_field"
+}
+
+Rubick.Buffs = {
+    "ogre_magi_bloodlust",
+    "troll_warlord_battle_trance",
+    "invoker_alacrity",
+    "magnataur_empower",
+    "morphling_morph",
+    "morphling_morph_agi",
+    "morphling_morph_str",
+    "earthshaker_enchant_totem",
+    "kunkka_tidebringer",
+    "sven_warcry",
+    "lich_frost_armor",
+    "tinker_rearm",
+    "templar_assassin_refraction",
+    "dragon_knight_elder_dragon_form",
+    "dazzle_shallow_grave",
+    "dark_seer_surge",
+    "omniknight_repel",
+    "broodmother_insatiable_hunger",
+    "ancient_apparition_chilling_touch",
+    "ursa_overpower",
+    "ursa_enrage",
+    "alchemist_chemical_rage",
+    "lycan_howl",
+    "lone_druid_rabid",
+    "lone_druid_savage_roar",
+    "lone_druid_true_form",
+    "lone_druid_true_form_druid",
+    "lone_druid_true_form_battle_cry",
+    "terrorblade_metamorphosis",
+    "abaddon_aphotic_shield",
+    "legion_commander_press_the_attack",
+    "wisp_tether",
+    "keeper_of_the_light_chakra_magic",
+    "ember_spirit_flame_guard"
+}
+
+Rubick.Debuffs = {
+    "visage_grave_chill",
+    "chen_penitence",
+    "lion_mana_drain",
+    "bane_enfeeble",
+    "razor_static_link",
+    "slardar_amplify_damage",
+    "dazzle_weave",
+    "batrider_sticky_napalm",
+    "brewmaster_drunken_haze",
+    "shadow_demon_soul_catcher",
+    "chaos_knight_reality_rift",
+    "bounty_hunter_track"
+}
+
+Rubick.Heals = {
+    "chen_test_of_faith",
+    "chen_test_of_faith_teleport",
+    "juggernaut_healing_ward",
+    "witch_doctor_voodoo_restoration",
+    "warlock_upheaval",
+    "dazzle_shadow_wave",
+    "omniknight_purification",
+    "enchantress_natures_attendants",
+    "huskar_inner_vitality",
+    "treant_living_armor",
+    "winter_wyvern_cold_embrace"
+}
+
+Rubick.Escapes = {
+    "invoker_ghost_walk",
+    "abyssal_underlord_dark_rift",
+    "phoenix_icarus_dive",
+    "phoenix_icarus_dive_stop",
+    "faceless_void_time_walk",
+    "juggernaut_blade_fury",
+    "antimage_blink",
+    "mirana_invis",
+    "queenofpain_blink",
+    "morphling_waveform",
+    "mirana_leap",
+    "kunkka_x_marks_the_spot",
+    "kunkka_return",
+    "centaur_stampede",
+    "phantom_lancer_doppelwalk",
+    "puck_illusory_orb",
+    "puck_ethereal_jaunt",
+    "puck_phase_shift",
+    "sandking_sand_storm",
+    "slardar_sprint",
+    "windrunner_windrun",
+    "pugna_decrepify",
+    "templar_assassin_meld",
+    "dazzle_shallow_grave",
+    "furion_teleportation",
+    "life_stealer_rage",
+    "life_stealer_infest",
+    "life_stealer_consume",
+    "life_stealer_assimilate",
+    "life_stealer_assimilate_eject",
+    "life_stealer_control",
+    "clinkz_wind_walk",
+    "bounty_hunter_wind_walk",
+    "weaver_shukuchi",
+    "weaver_time_lapse",
+    "batrider_firefly",
+    "brewmaster_primal_split",
+    "shredder_timber_chain",
+    "nyx_assassin_spiked_carapace",
+    "nyx_assassin_vendetta",
+    "nyx_assassin_burrow",
+    "nyx_assassin_unburrow",
+    "slark_pounce",
+    "wisp_relocate",
+    "monkey_king_tree_dance",
+    "monkey_king_primal_spring",
+    "dark_willow_shadow_realm"
+}
+
+Rubick.Disables = {
+    "bane_nightmare",
+    "skeleton_king_hellfire_blast",
+    "invoker_emp",
+    "invoker_cold_snap",
+    "slardar_slithereen_crush",
+    "sven_storm_bolt",
+    "lion_impale",
+    "elder_titan_echo_stomp",
+    "tiny_avalanche",
+    "spirit_breaker_charge_of_darkness",
+    "puck_dream_coil",
+    "earthshaker_fissure",
+    "lion_voodoo",
+    "mirana_arrow",
+    "lina_light_strike_array",
+    "axe_berserkers_call",
+    "shadow_shaman_shackles",
+    "storm_spirit_electric_vortex",
+    "windrunner_shackleshot",
+    "witch_doctor_paralyzing_cask",
+    "riki_smoke_screen",
+    "tinker_laser",
+    "rattletrap_power_cogs",
+    "furion_sprout",
+    "jakiro_ice_path",
+    "batrider_flaming_lasso",
+    "obsidian_destroyer_astral_imprisonment",
+    "meepo_earthbind",
+    "centaur_hoof_stomp",
+    "disruptor_glimpse",
+    "disruptor_kinetic_field",
+    "naga_siren_ensnare",
+    "abyssal_underlord_pit_of_malice"
+}
+
+Rubick.DoNotSteal = {
+    "morphling_adaptive_strike_str",
+    "morphling_hybrid",
+    "pudge_rot",
+    "tiny_toss_tree",
+    "vengefulspirit_nether_swap",
+    "lich_dark_ritual",
+    "riki_blink_strike",
+    "tinker_march_of_the_machines",
+    "faceless_void_backtrack",
+    "templar_assassin_trap",
+    "templar_assassin_self_trap",
+    "rattletrap_hookshot",
+    "clinkz_strafe",
+    "night_stalker_darkness",
+    "broodmother_spin_web",
+    "meepo_poof",
+    "undying_soul_rip",
+    "earth_spirit_boulder_smash",
+    "earth_spirit_rolling_boulder",
+    "earth_spirit_geomagnetic_grip",
+    "earth_spirit_petrify",
+    "medusa_split_shot",
+    "wisp_overcharge",
+    "keeper_of_the_light_recall",
+    "troll_warlord_berserkers_rage",
+    "abyssal_underlord_cancel_dark_rift",
+    "oracle_fortunes_end",
+    "oracle_fates_edict",
+    "monkey_king_mischief"
+}
+
+return Rubick

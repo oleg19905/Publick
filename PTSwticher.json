@@ -1,0 +1,80 @@
+local PTshka = {}
+PTshka.optionEnable = Menu.AddOption({"Utility"}, "PT Switcher", "")
+local myHero
+local lastStat
+local nextTick = 0
+local changed = true
+
+PTshka.DisablesAbilities = {
+	"item_manta",
+	"item_invis_sword",
+	"item_silver_edge",
+	"ember_spirit_sleight_of_fist",
+	"morphling_adaptive_strike_agi",
+	"naga_siren_mirror_image",
+	"chaos_knight_phantasm",
+	"terrorblade_conjure_image",
+}
+
+function PTshka.Init()
+	myHero = Heroes.GetLocal()
+	changed = true
+	nextTick = 0
+end
+PTshka.Init()
+
+function PTshka.OnGameStart()
+	PTshka.Init()
+end
+
+function PTshka.OnGameEnd()
+	PTshka.Init()
+end
+
+function PTshka.OnUpdate()
+	if not Menu.IsEnabled(PTshka.optionEnable) then return end
+	if not myHero then return end
+	if lastStat and GameRules.GetGameTime() >= nextTick and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) and not NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVULNERABLE) then
+		local pt = NPC.GetItem(myHero, "item_power_treads", true)
+		if pt and not NPC.IsChannellingAbility(myHero) then
+			if PowerTreads.GetStat(pt) ~= lastStat and not changed then
+				Ability.CastNoTarget(pt)
+				nextTick = nextTick + 0.1 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)				
+			end
+			if PowerTreads.GetStat(pt) == lastStat then
+				lastStat = nil
+				changed = true
+			end
+		end
+	end
+end
+
+function PTshka.OnPrepareUnitOrders(orders)
+	if not Menu.IsEnabled(PTshka.optionEnable) or not myHero then return true end
+	if Entity.IsEntity(myHero) and NPC.HasState(myHero, Enum.ModifierState.MODIFIER_STATE_INVISIBLE) then return true end
+	if orders.order ~= 5 and orders.order ~= 6 and orders.order ~= 7 and orders.order ~= 8 and orders.order ~= 9 then return true end
+	if not orders.ability or not Entity.IsAbility(orders.ability) then return true end
+	if Ability.GetManaCost(orders.ability) < 1 then return true end
+	local usedAbil = orders.ability
+	for _, abil in pairs(PTshka.DisablesAbilities) do
+		if Ability.GetName(usedAbil) == abil then return true end
+	end
+	local pt = NPC.GetItem(myHero, "item_power_treads", true)
+	if pt and not NPC.IsChannellingAbility(myHero) then
+		if NPC.IsStunned(myHero) then return true end
+		if changed then
+			lastStat = PowerTreads.GetStat(pt)
+		end
+		if PowerTreads.GetStat(pt) == 0 then
+			Ability.CastNoTarget(pt)
+		elseif PowerTreads.GetStat(pt) == 2 then
+			Ability.CastNoTarget(pt)
+			Ability.CastNoTarget(pt)
+		end
+		changed = false
+		nextTick = GameRules.GetGameTime() + Ability.GetCastPoint(orders.ability) + 0.45 + NetChannel.GetAvgLatency(Enum.Flow.FLOW_OUTGOING)
+	end
+	return true
+end
+
+return PTshka
